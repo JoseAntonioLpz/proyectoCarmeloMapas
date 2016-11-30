@@ -18,6 +18,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <TextView
+                android:text=""
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvLocalizador"
+                android:layout_weight="1" />
+
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -31,6 +38,20 @@
                 android:ems="10"
                 android:id="@+id/etNota"
                 android:hint="@string/nota"/>
+
+            <Button
+                android:text="ObtenerLocalizacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btObetenrUbicacion"
+                android:layout_weight="1" />
+
+            <Button
+                android:text="VisualizarLocalizacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btVisualizarLocalizacion"
+                android:layout_weight="1" />
 
         </LinearLayout>
 

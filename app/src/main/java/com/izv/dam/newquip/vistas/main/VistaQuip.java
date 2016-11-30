@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.izv.dam.newquip.R;
 import com.izv.dam.newquip.adaptadores.AdaptadorNota;
 import com.izv.dam.newquip.contrato.ContratoMain;
+
 import com.izv.dam.newquip.dialogo.OnBorrarDialogListener;
 import com.izv.dam.newquip.pojo.Nota;
 import com.izv.dam.newquip.dialogo.DialogoBorrar;
