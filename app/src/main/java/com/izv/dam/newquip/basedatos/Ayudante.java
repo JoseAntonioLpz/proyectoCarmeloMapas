@@ -14,7 +14,7 @@ public class Ayudante extends SQLiteOpenHelper {
     //fechas https://www.sqlite.org/lang_datefunc.html
     //trigger https://www.sqlite.org/lang_createtrigger.html
 
-    private static final int VERSION = 2;
+    private static final int VERSION = 6;
 
     public Ayudante(Context context) {
         super(context, ContratoBaseDatos.BASEDATOS, null, VERSION);
@@ -39,5 +39,6 @@ public class Ayudante extends SQLiteOpenHelper {
         String sql="drop table if exists " + ContratoBaseDatos.TablaNota.TABLA;
         db.execSQL(sql);
         Log.v("sql",sql);
+        onCreate(db);
     }
 }

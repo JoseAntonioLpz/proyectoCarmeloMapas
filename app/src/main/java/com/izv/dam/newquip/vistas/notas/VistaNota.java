@@ -2,7 +2,13 @@ package com.izv.dam.newquip.vistas.notas;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -11,23 +17,41 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.izv.dam.newquip.R;
+import com.izv.dam.newquip.basedatos.AyudanteLocalizaciones;
 import com.izv.dam.newquip.contrato.ContratoNota;
 
+import com.izv.dam.newquip.pojo.Localizaciones;
 import com.izv.dam.newquip.pojo.Nota;
-import com.izv.dam.newquip.vistas.VistaMapa;
 import com.izv.dam.newquip.vistas.VistaMapaVisualizar;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.QueryBuilder;
 
-public class VistaNota extends AppCompatActivity implements ContratoNota.InterfaceVista {
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+public class VistaNota extends AppCompatActivity implements ContratoNota.InterfaceVista,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener{
 
     private EditText editTextTitulo, editTextNota;
     private Nota nota = new Nota();
     private PresentadorNota presentador;
     private TextView tvLocalizacion;
+    private GoogleApiClient mGoogleApiClient;
 
-    private Button btLocalizador;
     private  Button btVisualizador;
     private Context c = this;
+
+    private AyudanteLocalizaciones a = new AyudanteLocalizaciones(c);
+    RuntimeExceptionDao<Localizaciones,Integer> Dao = a.getSimpleRunTimeDao();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +61,6 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
 
         editTextTitulo = (EditText) findViewById(R.id.etTitulo);
         editTextNota = (EditText) findViewById(R.id.etNota);
-        btLocalizador = (Button) findViewById(R.id.btObetenrUbicacion);
         btVisualizador = (Button) findViewById(R.id.btVisualizarLocalizacion);
         tvLocalizacion =(TextView) findViewById(R.id.tvLocalizador);
 
@@ -51,39 +74,32 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
         }
         mostrarNota(nota);
 
-        btLocalizador.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(c,nota.getLocalizacion(),Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(c, VistaMapa.class);
-                startActivityForResult(i,111);
-            }
-        });
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
 
         btVisualizador.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(c, VistaMapaVisualizar.class);
-                Bundle b = new Bundle();
-                b.putString("localizacion" , nota.getLocalizacion());
-                i.putExtras(b);
-                startActivity(i);
+                ArrayList<Localizaciones> loc;
+                try{
+                    QueryBuilder<Localizaciones,Integer> qb = Dao.queryBuilder();
+                    qb.setWhere(qb.where().eq("id",nota.getId()));
+                    loc = (ArrayList<Localizaciones>) Dao.query(qb.prepare());
+                    Intent i = new Intent(c, VistaMapaVisualizar.class);
+                    Bundle b = new Bundle();
+                    b.putParcelableArrayList("localizaciones", loc);
+                    i.putExtras(b);
+                    startActivity(i);
+                }catch (SQLException e){
+                    e.printStackTrace();
+                }
             }
         });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK){
-            switch (requestCode){
-                case 111:
-                    String localizacion = data.getExtras().getString("localizacion");
-                    nota.setLocalizacion(localizacion);
-                    tvLocalizacion.setText(nota.getLocalizacion());
-                    break;
-            }
-        }
     }
 
     @Override
@@ -109,7 +125,6 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
     public void mostrarNota(Nota n) {
         editTextTitulo.setText(nota.getTitulo());
         editTextNota.setText(nota.getNota());
-        tvLocalizacion.setText(nota.getLocalizacion());
     }
 
     private void saveNota() {
@@ -120,7 +135,59 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
             nota.setId(r);
         }
     }
+    protected void onStart() {
+        mGoogleApiClient.connect();
+        super.onStart();
+    }
+
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        System.out.println("On connected");
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "NO FINE LOCATION", Toast.LENGTH_SHORT);
+            System.out.println("no fine location");
+            return;
+        }
+
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            Toast.makeText(this, "NO COARSED LOCATION", Toast.LENGTH_SHORT);
+            System.out.println("no coarsed location");
+            return;
+
+        }
+        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+            Toast.makeText(this, mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude(), Toast.LENGTH_SHORT);
+        }
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Toast.makeText(this,"Conexion suspendida",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(this,"Conexion fallida",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        saveNota();
+        float latitude = (float) location.getLatitude();
+        float longitude = (float) location.getLongitude();
+        Localizaciones loc = new Localizaciones(nota.getId(),latitude,longitude);
+        Dao.create(loc);
+    }
 }
-/*
-* TODO Hacer base de datos OrmLite
-*/

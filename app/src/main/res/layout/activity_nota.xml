@@ -40,13 +40,6 @@
                 android:hint="@string/nota"/>
 
             <Button
-                android:text="ObtenerLocalizacion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/btObetenrUbicacion"
-                android:layout_weight="1" />
-
-            <Button
                 android:text="VisualizarLocalizacion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -21,6 +21,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.izv.dam.newquip.R;
+import com.izv.dam.newquip.pojo.Localizaciones;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by josea on 30/11/2016.
@@ -28,11 +32,8 @@ import com.izv.dam.newquip.R;
 
 public class VistaMapaVisualizar extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
-    private String localizacion;
-    private float latitude;
-    private float longitude;
+        GoogleApiClient.OnConnectionFailedListener{
+    private ArrayList<Localizaciones> loc;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
 
@@ -43,9 +44,7 @@ public class VistaMapaVisualizar extends AppCompatActivity implements OnMapReady
         mapFragment.getMapAsync(this);
 
         Bundle b = getIntent().getExtras();
-        localizacion = b.getString("localizacion");
-        latitude = (float) Double.parseDouble(localizacion.substring(0,10));
-        longitude = (float) Double.parseDouble(localizacion.substring(11));
+        loc = b.getParcelableArrayList("localizaciones");
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -67,9 +66,14 @@ public class VistaMapaVisualizar extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        LatLng punto = new LatLng(latitude,longitude);
-        mMap.addMarker(new MarkerOptions().position(punto).title("Make in this point"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(punto, 17));
+        for (Localizaciones localizacion : loc){
+            int i = 1;
+            LatLng punto = new LatLng(localizacion.getLatitude(),localizacion.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(punto).title("Localizacion nº" + i));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(punto));
+            i++;
+        }
+
     }
 
     @Override
@@ -80,10 +84,6 @@ public class VistaMapaVisualizar extends AppCompatActivity implements OnMapReady
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
     }
 
     @Override
