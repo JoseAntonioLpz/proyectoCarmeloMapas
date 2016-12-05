@@ -15,7 +15,7 @@ import com.j256.ormlite.table.TableUtils;
  */
 
 public class AyudanteLocalizaciones extends OrmLiteSqliteOpenHelper {
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
 
     private Dao<Localizaciones,Integer> simpleDao = null;
     private RuntimeExceptionDao<Localizaciones,Integer> simpleRunTimeDao=null;

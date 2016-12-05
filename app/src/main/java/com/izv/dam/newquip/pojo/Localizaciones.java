@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.util.Date;
+
 /**
  * Created by josea on 03/12/2016.
  */
@@ -22,20 +24,25 @@ public class Localizaciones implements Parcelable {
     @DatabaseField
     float longitude;
 
-    public Localizaciones(long id, float latitude, float longitude) {
+    @DatabaseField
+    String fecha;
+
+    public Localizaciones(long id, float latitude, float longitude, String fecha) {
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.fecha = fecha;
     }
 
     public Localizaciones() {
-        this(0,(float)0.0,(float)0.0);
+        this(0,(float)0.0,(float)0.0,"");
     }
 
     protected Localizaciones(Parcel in) {
         id = in.readLong();
         latitude = in.readFloat();
         longitude = in.readFloat();
+        fecha = in.readString();
     }
 
     public static final Creator<Localizaciones> CREATOR = new Creator<Localizaciones>() {
@@ -74,12 +81,21 @@ public class Localizaciones implements Parcelable {
         this.longitude = longitude;
     }
 
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
+    }
+
     @Override
     public String toString() {
         return "Localizaciones{" +
                 "id=" + id +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
+                ", fecha=" + fecha +
                 '}';
     }
 
@@ -93,5 +109,6 @@ public class Localizaciones implements Parcelable {
         dest.writeLong(id);
         dest.writeFloat(latitude);
         dest.writeFloat(longitude);
+        dest.writeString(fecha);
     }
 }

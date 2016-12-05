@@ -67,11 +67,9 @@ public class VistaMapaVisualizar extends AppCompatActivity implements OnMapReady
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         for (Localizaciones localizacion : loc){
-            int i = 1;
             LatLng punto = new LatLng(localizacion.getLatitude(),localizacion.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(punto).title("Localizacion nº" + i));
+            mMap.addMarker(new MarkerOptions().position(punto).title(localizacion.getFecha()));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(punto));
-            i++;
         }
 
     }

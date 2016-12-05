@@ -28,12 +28,14 @@ import com.izv.dam.newquip.contrato.ContratoNota;
 
 import com.izv.dam.newquip.pojo.Localizaciones;
 import com.izv.dam.newquip.pojo.Nota;
+import com.izv.dam.newquip.util.UtilFecha;
 import com.izv.dam.newquip.vistas.VistaMapaVisualizar;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class VistaNota extends AppCompatActivity implements ContratoNota.InterfaceVista,
         GoogleApiClient.ConnectionCallbacks,
@@ -187,7 +189,8 @@ public class VistaNota extends AppCompatActivity implements ContratoNota.Interfa
         saveNota();
         float latitude = (float) location.getLatitude();
         float longitude = (float) location.getLongitude();
-        Localizaciones loc = new Localizaciones(nota.getId(),latitude,longitude);
+        String fecha = UtilFecha.formatDate(new Date());
+        Localizaciones loc = new Localizaciones(nota.getId(),latitude,longitude,fecha);
         Dao.create(loc);
     }
 }
